@@ -36,20 +36,35 @@ const Dealer = () => {
     }
   }
 
-  const get_reviews = async ()=>{
+  const get_reviews = async () => {
+  try {
     const res = await fetch(reviews_url, {
       method: "GET"
     });
-    const retobj = await res.json();
     
-    if(retobj.status === 200) {
-      if(retobj.reviews.length > 0){
-        setReviews(retobj.reviews)
+    if (!res.ok) {
+      throw new Error(`Error: ${res.status}`);
+    }
+    
+    const retobj = await res.json();
+
+    // Log the response object to verify its structure
+    console.log('Reviews response:', retobj);
+
+    if (retobj.status === 200) {
+      if (retobj.reviews && retobj.reviews.length > 0) {
+        setReviews(retobj.reviews);
       } else {
         setUnreviewed(true);
       }
+    } else {
+      console.error('Unexpected response status:', retobj.status);
     }
+  } catch (error) {
+    console.error('Error fetching reviews:', error);
   }
+  }
+
 
   const senti_icon = (sentiment)=>{
     let icon = sentiment === "positive"?positive_icon:sentiment==="negative"?negative_icon:neutral_icon;
@@ -74,7 +89,7 @@ return(
       <h1 style={{color:"grey"}}>{dealer.full_name}{postReview}</h1>
       <h4  style={{color:"grey"}}>{dealer['city']},{dealer['address']}, Zip - {dealer['zip']}, {dealer['state']} </h4>
       </div>
-      <div class="reviews_panel">
+      <div className="reviews_panel">
       {reviews.length === 0 && unreviewed === false ? (
         <text>Loading Reviews....</text>
       ):  unreviewed === true? <div>No reviews yet! </div> :
